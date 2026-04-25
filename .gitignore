@@ -1,0 +1,34 @@
+# Build directories
+build/
+build_default/
+cmake-build-*/
+
+# Generated experiment outputs
+out/
+out_*/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+Makefile
+
+# Compiled objects and libraries
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Local/editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
