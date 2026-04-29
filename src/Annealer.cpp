@@ -34,7 +34,20 @@ FloorplanSolution evaluateSequencePair(const FloorplanProblem& problem, const Se
             s.status = "LP mode requires an available LP solver";
             return s;
         }
-        return optimizeByLP(problem, sp, *solver);
+        FloorplanSolution lp = optimizeByLP(problem, sp, *solver);
+        if (lp.feasible || mode == EvaluationMode::LP) return lp;
+
+        // Paper deviation / engineering fallback:
+        // In the paper, SA-LP evaluates topologies by LP. In fixed-outline
+        // MCNC runs, many early topologies are LP-infeasible; treating every
+        // failure as the same infinite objective prevents search progress.
+        // We therefore use compact construction's outline/aspect penalty only
+        // as a search signal for infeasible SA-LP candidates. Feasible
+        // candidates and final reported LP solutions still come from the LP.
+        FloorplanSolution penalty = constructByKimKim(problem, sp);
+        penalty.feasible = false;
+        penalty.status = "lp_infeasible; " + penalty.status;
+        return penalty;
     }
     return constructByKimKim(problem, sp);
 }
@@ -44,7 +57,7 @@ double annealingObjective(const FloorplanSolution& solution) {
     // simulated annealing just because a default objective was left behind.
     // Construction-mode aspect/outline violations already carry a penalty, but
     // they still remain infeasible and are therefore treated as very bad here.
-    if (!solution.feasible || !std::isfinite(solution.objectiveValue)) return 1e100;
+    if (!std::isfinite(solution.objectiveValue)) return 1e100;
     return solution.objectiveValue;
 }
 
@@ -55,7 +68,7 @@ AnnealerResult runAnnealing(const FloorplanProblem& problem, EvaluationMode mode
     const int n = static_cast<int>(problem.blocks.size());
     std::mt19937 rng(options.seed);
     SequencePair current = SequencePair::random(n, rng);
-    const EvaluationMode evalMode = mode == EvaluationMode::SA_LP ? EvaluationMode::LP : EvaluationMode::CT;
+    const EvaluationMode evalMode = mode == EvaluationMode::SA_LP ? EvaluationMode::SA_LP : EvaluationMode::CT;
     FloorplanSolution currentSol = evaluateSequencePair(problem, current, evalMode, solver);
     SequencePair best = current;
     FloorplanSolution bestSol = currentSol;

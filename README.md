@@ -110,13 +110,28 @@ sh run-highs.sh
 sh run-mosek.sh
 ```
 
-By default these run the `apte` MCNC benchmark with `SA-LP`, export `model.mps`/`model.lp`, and verify the exported MPS with the external solver. Override defaults with environment variables:
+By default these run the `apte` MCNC benchmark with `SA-CT-LP`, export `model.mps`/`model.lp`, generate `floorplan.png`, and verify the exported MPS with the external solver. Override defaults with environment variables:
 
 ```bash
 BENCHMARK=ami33 ITERATIONS=2000 sh run-highs.sh
 BENCHMARK=ami33 ITERATIONS=2000 sh run-mosek.sh
 INPUT=examples/small.json MODE=LP OUTPUT=out/small_highs sh run-highs.sh
 ```
+
+To run the bundled MCNC set with both external solver checks:
+
+```bash
+ITERATIONS=1000 sh run-all-mcnc.sh
+```
+
+This runs `apte`, `xerox`, `hp`, `ami33`, and `ami49` with both HiGHS and MOSEK checks. Outputs are written under:
+
+```text
+out/mcnc_SA-CT-LP/<benchmark>_highs/
+out/mcnc_SA-CT-LP/<benchmark>_mosek/
+```
+
+Each successful result directory contains `summary.json`, `placements.csv`, `model.mps`, `model.lp`, solver solution files, and `floorplan.png`.
 
 Outputs:
 
@@ -131,6 +146,18 @@ Outputs:
 - Soft-block area is enforced with a tangent-style linear surrogate `w + alpha*h >= 2*sqrt(area*alpha)` and an iterative alpha correction loop.
 - Nets use block centers for HPWL and LP bounding boxes. Pin-aware wirelength is intentionally simplified.
 - Hard-block orientations are fixed before LP by running the construction method for the same sequence-pair.
-- The current LP keeps all pairwise sequence-pair precedence constraints. Redundant-constraint removal from Kim and Kim is left as future work.
+- The LP applies transitive reduction to sequence-pair precedence DAGs before adding non-overlap constraints, following Kim and Kim's goal of reducing redundant LP constraints.
 - Soft-block construction candidates are log-spaced aspect ratios.
 - Exact pin orientation/flipping and 3D extensions are not implemented in this 2D baseline.
+
+## Paper Fidelity
+
+The implementation follows the paper's main architecture: sequence-pair topology, simulated annealing topology search, construction-based hard orientation selection, and LP-based coordinate/dimension optimization for a fixed sequence-pair.
+
+Intentional simplifications and engineering choices:
+
+- Block-center HPWL is used for movable block pins; MCNC terminals are read as fixed pads.
+- Soft-block area is handled by iterative linear cuts instead of an exact nonlinear model.
+- Soft construction candidates are log-spaced aspect ratios.
+- `SA-LP` uses a construction penalty only when an LP candidate is infeasible, so fixed-outline MCNC searches can keep moving.
+- MOSEK is used through exported MPS/LP files, not a native C++ backend yet.

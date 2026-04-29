@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <utility>
 #include <stdexcept>
 
 namespace fp {
@@ -65,6 +66,29 @@ void addEq(LPModel& m, const std::string& name, std::initializer_list<std::pair<
         vals.push_back(v);
     }
     m.addConstraint(name, std::move(ids), std::move(vals), ConstraintSense::Equal, rhs);
+}
+
+std::vector<std::pair<int, int>> transitiveReduction(int n, const std::vector<std::pair<int, int>>& edges) {
+    std::vector<std::vector<bool>> reach(n, std::vector<bool>(n, false));
+    for (const auto& [u, v] : edges) reach[u][v] = true;
+    for (int k = 0; k < n; ++k) {
+        for (int i = 0; i < n; ++i) {
+            if (!reach[i][k]) continue;
+            for (int j = 0; j < n; ++j) reach[i][j] = reach[i][j] || reach[k][j];
+        }
+    }
+
+    std::vector<std::pair<int, int>> reduced;
+    reduced.reserve(edges.size());
+    for (const auto& [u, v] : edges) {
+        bool redundant = false;
+        for (int k = 0; k < n && !redundant; ++k) {
+            if (k == u || k == v) continue;
+            redundant = reach[u][k] && reach[k][v];
+        }
+        if (!redundant) reduced.push_back({u, v});
+    }
+    return reduced;
 }
 
 } // namespace
@@ -171,20 +195,32 @@ LPBuildResult buildLPModel(const FloorplanProblem& problem, const SequencePair& 
         }
     }
 
-    // TODO: Kim and Kim remove redundant constraints to reduce LP size.
-    // Current implementation keeps all pairwise precedence constraints for simplicity.
+    // Kim and Kim reduce redundant sequence-pair constraints before solving
+    // the LP. We apply a transitive reduction independently to the horizontal
+    // and vertical precedence DAGs, preserving the feasible region while
+    // reducing model size.
+    std::vector<std::pair<int, int>> horizontalEdges;
+    std::vector<std::pair<int, int>> verticalEdges;
     for (const auto& rel : sp.allRelations()) {
         const int i = rel.i;
         const int j = rel.j;
         if (rel.relation == Relation::LEFT_OF) {
-            addMixedLe("left_" + std::to_string(i) + "_" + std::to_string(j), {{out.vars.x[i], 1.0}, widthTerm(i, 1.0), {out.vars.x[j], -1.0}}, 0.0);
+            horizontalEdges.push_back({i, j});
         } else if (rel.relation == Relation::RIGHT_OF) {
-            addMixedLe("right_" + std::to_string(i) + "_" + std::to_string(j), {{out.vars.x[j], 1.0}, widthTerm(j, 1.0), {out.vars.x[i], -1.0}}, 0.0);
+            horizontalEdges.push_back({j, i});
         } else if (rel.relation == Relation::BELOW) {
-            addMixedLe("below_" + std::to_string(i) + "_" + std::to_string(j), {{out.vars.y[i], 1.0}, heightTerm(i, 1.0), {out.vars.y[j], -1.0}}, 0.0);
+            verticalEdges.push_back({i, j});
         } else {
-            addMixedLe("above_" + std::to_string(i) + "_" + std::to_string(j), {{out.vars.y[j], 1.0}, heightTerm(j, 1.0), {out.vars.y[i], -1.0}}, 0.0);
+            verticalEdges.push_back({j, i});
         }
+    }
+    horizontalEdges = transitiveReduction(n, horizontalEdges);
+    verticalEdges = transitiveReduction(n, verticalEdges);
+    for (const auto& [i, j] : horizontalEdges) {
+        addMixedLe("left_" + std::to_string(i) + "_" + std::to_string(j), {{out.vars.x[i], 1.0}, widthTerm(i, 1.0), {out.vars.x[j], -1.0}}, 0.0);
+    }
+    for (const auto& [i, j] : verticalEdges) {
+        addMixedLe("below_" + std::to_string(i) + "_" + std::to_string(j), {{out.vars.y[i], 1.0}, heightTerm(i, 1.0), {out.vars.y[j], -1.0}}, 0.0);
     }
 
     for (int i = 0; i < n; ++i) {
