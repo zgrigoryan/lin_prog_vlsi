@@ -32,9 +32,9 @@ struct Args {
 
 void usage() {
     std::cerr << "Usage:\n";
-    std::cerr << "  floorplanner --input examples/small.json --mode SA-LP --solver highs --iterations 10000 --output out/\n";
     std::cerr << "  floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver highs --iterations 10000 --output out/apte\n";
     std::cerr << "  floorplanner --blocks mcnc_hard/apte.block --nets mcnc_hard/apte.nets --mode SA-CT-LP --solver highs --output out/apte\n";
+    std::cerr << "  floorplanner --input custom.json --mode LP --solver highs --output out/custom\n";
 }
 
 Args parseArgs(int argc, char** argv) {

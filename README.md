@@ -49,17 +49,17 @@ cmake --build build
 ## CLI
 
 ```bash
-./build/floorplanner --input examples/small.json --mode SA-LP --solver highs --iterations 10000 --output out/
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver highs --iterations 10000 --output out/apte
 ```
 
 Recommended commands:
 
 ```bash
-./build/floorplanner --input examples/small.json --mode CT --solver none --output out/ct
-./build/floorplanner --input examples/small.json --mode LP --solver highs --output out/lp
-./build/floorplanner --input examples/small.json --mode SA-CT --solver none --iterations 1000 --output out/sa_ct
-./build/floorplanner --input examples/small.json --mode SA-LP --solver highs --iterations 1000 --output out/sa_lp
-./build/floorplanner --input examples/small.json --mode SA-CT-LP --solver highs --iterations 1000 --output out/sa_ct_lp
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode CT --solver none --output out/apte_ct
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode LP --solver highs --output out/apte_lp
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT --solver none --iterations 1000 --output out/apte_sa_ct
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-LP --solver highs --iterations 1000 --output out/apte_sa_lp
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver highs --iterations 1000 --output out/apte_sa_ct_lp
 ```
 
 MCNC benchmark commands:
@@ -94,7 +94,8 @@ Use `--export-lp` or `--export-mps` to write the LP model for the selected seque
 
 ```bash
 ./build/floorplanner \
-  --input examples/small.json \
+  --mcnc apte \
+  --mcnc-dir mcnc_hard \
   --mode LP \
   --solver highs \
   --export-mps out/model.mps \
@@ -115,7 +116,7 @@ By default these run the `apte` MCNC benchmark with `SA-CT-LP`, export `model.mp
 ```bash
 BENCHMARK=ami33 ITERATIONS=2000 sh run-highs.sh
 BENCHMARK=ami33 ITERATIONS=2000 sh run-mosek.sh
-INPUT=examples/small.json MODE=LP OUTPUT=out/small_highs sh run-highs.sh
+INPUT=custom.json MODE=LP OUTPUT=out/custom_highs sh run-highs.sh
 ```
 
 To run the bundled MCNC set with both external solver checks:
