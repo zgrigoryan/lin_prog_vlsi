@@ -1,8 +1,8 @@
 # Floorplanner Result Summary
 
-Total runs: 33
+Total runs: 36
 
-Feasible runs: 24
+Feasible runs: 27
 
 | Result | Mode | Solver | Feasible | Objective | Wirelength | Area | Runtime |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -13,8 +13,11 @@ Feasible runs: 24
 | out/ami33_sactlp_debug | SA-CT-LP | highs | True | 107872.0 | 105341.0 | 1597830.0 | 8.469728 |
 | out/ami49_highs | SA-LP | highs | False | None | 0.0 | 0.0 | 49.27063 |
 | out/ami49_mosek_check | SA-LP | highs | False | None | 0.0 | 0.0 | 49.70769 |
+| out/apte_best_practices_check | SA-CT-LP | highs | True | 868800.0 | 850592.0 | 75098716.0 | 0.16113 |
 | out/apte_highs | SA-LP | highs | True | 726791.0 | 708583.0 | 75098716.0 | 5.642832 |
+| out/apte_metadata_check | SA-CT-LP | highs | True | 898552.0 | 880344.0 | 75098716.0 | 0.135141 |
 | out/apte_mosek_check | SA-LP | highs | True | 726791.0 | 708583.0 | 75098716.0 | 5.653973 |
+| out/apte_script_check | SA-CT-LP | highs | True | 898552.0 | 880344.0 | 75098716.0 | 0.134878 |
 | out/apte_soft_check | SA-CT-LP | highs | True | 822445.741779 | 804237.741779 | 75098716.0 | 0.381093 |
 | out/apte_soft_check2 | SA-CT-LP | highs | True | 823127.213177 | 804919.213177 | 75098716.0 | 0.245633 |
 | out/ct | CT | none | True | 58.740115 | 26.870058 | 250.710678 | 7.3e-05 |

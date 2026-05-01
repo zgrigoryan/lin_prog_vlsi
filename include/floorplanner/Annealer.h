@@ -19,11 +19,20 @@ struct AnnealerOptions {
     double initialTemperature = 100.0;
     double coolingRatio = 0.95;
     unsigned seed = 1;
+    bool autoInitialTemperature = false;
+    int temperatureCalibrationSamples = 200;
+    double targetAcceptanceProbability = 0.80;
+    bool verbose = false;
+    int progressIntervalEpochs = 200;
 };
 
 struct AnnealerResult {
     FloorplanSolution solution;
     SequencePair sequencePair;
+    double initialTemperatureUsed = 0.0;
+    int epochLengthUsed = 0;
+    long long totalMoves = 0;
+    long long acceptedMoves = 0;
 };
 
 EvaluationMode parseMode(const std::string& text);

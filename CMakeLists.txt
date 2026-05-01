@@ -43,3 +43,15 @@ add_executable(floorplanner_tests tests/test_floorplanner.cpp)
 target_link_libraries(floorplanner_tests PRIVATE floorplanner_lib)
 target_compile_definitions(floorplanner_tests PRIVATE FP_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME floorplanner_tests COMMAND floorplanner_tests)
+
+# Convenience targets borrowed from the 3D floorplanner workflow. They keep
+# experiment outputs predictable without making generated results part of the
+# source tree.
+add_custom_target(output-dirs
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/out
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/results/comparisons
+)
+
+add_custom_target(clean-outputs
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/out
+)

@@ -26,6 +26,9 @@ struct Args {
     double initialTemperature = 100.0;
     double coolingRatio = 0.95;
     unsigned seed = 1;
+    bool autoTemperature = false;
+    bool autoEpochLength = false;
+    bool verboseSa = false;
     std::string exportLp;
     std::string exportMps;
 };
@@ -35,6 +38,10 @@ void usage() {
     std::cerr << "  floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver highs --iterations 10000 --output out/apte\n";
     std::cerr << "  floorplanner --blocks mcnc_hard/apte.block --nets mcnc_hard/apte.nets --mode SA-CT-LP --solver highs --output out/apte\n";
     std::cerr << "  floorplanner --input custom.json --mode LP --solver highs --output out/custom\n";
+    std::cerr << "Options:\n";
+    std::cerr << "  --auto-temperature       calibrate the SA start temperature from sampled moves\n";
+    std::cerr << "  --auto-epoch-length      use max(200, num_blocks^2) moves per cooling step\n";
+    std::cerr << "  --verbose-sa             print annealing progress and acceptance statistics\n";
 }
 
 Args parseArgs(int argc, char** argv) {
@@ -59,6 +66,9 @@ Args parseArgs(int argc, char** argv) {
         else if (key == "--initial-temperature") a.initialTemperature = std::stod(need(key));
         else if (key == "--cooling-ratio") a.coolingRatio = std::stod(need(key));
         else if (key == "--seed") a.seed = static_cast<unsigned>(std::stoul(need(key)));
+        else if (key == "--auto-temperature") a.autoTemperature = true;
+        else if (key == "--auto-epoch-length") a.autoEpochLength = true;
+        else if (key == "--verbose-sa") a.verboseSa = true;
         else if (key == "--export-lp") a.exportLp = need(key);
         else if (key == "--export-mps") a.exportMps = need(key);
         else if (key == "--help" || key == "-h") {
@@ -110,11 +120,13 @@ int main(int argc, char** argv) {
         } else {
             fp::AnnealerOptions options;
             options.iterations = args.iterations;
-            options.epochLength = args.epochLength;
+            options.epochLength = args.autoEpochLength ? 0 : args.epochLength;
             options.maxEpochsWithoutImprovement = args.maxNoImproveEpochs;
             options.initialTemperature = args.initialTemperature;
             options.coolingRatio = args.coolingRatio;
             options.seed = args.seed;
+            options.autoInitialTemperature = args.autoTemperature;
+            options.verbose = args.verboseSa;
             result = fp::runAnnealing(problem, mode, solver.get(), options);
         }
 
@@ -145,7 +157,14 @@ int main(int argc, char** argv) {
         metadata.solver = args.solver;
         metadata.iterations = args.iterations;
         metadata.seed = args.seed;
-        metadata.epochLength = args.epochLength;
+        metadata.epochLength = args.autoEpochLength ? 0 : args.epochLength;
+        metadata.initialTemperature = args.initialTemperature;
+        metadata.initialTemperatureUsed = result.initialTemperatureUsed;
+        metadata.epochLengthUsed = result.epochLengthUsed;
+        metadata.autoTemperature = args.autoTemperature;
+        metadata.verboseAnnealing = args.verboseSa;
+        metadata.totalMoves = result.totalMoves;
+        metadata.acceptedMoves = result.acceptedMoves;
         metadata.coolingRatio = args.coolingRatio;
         metadata.numBlocks = static_cast<int>(problem.blocks.size());
         metadata.numNets = static_cast<int>(problem.nets.size());

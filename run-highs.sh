@@ -7,9 +7,22 @@ MCNC_DIR="${MCNC_DIR:-mcnc_hard}"
 MODE="${MODE:-SA-CT-LP}"
 ITERATIONS="${ITERATIONS:-1000}"
 MAX_NO_IMPROVE_EPOCHS="${MAX_NO_IMPROVE_EPOCHS:-1000000}"
+AUTO_TEMPERATURE="${AUTO_TEMPERATURE:-0}"
+AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH:-0}"
+VERBOSE_SA="${VERBOSE_SA:-0}"
 OUTPUT="${OUTPUT:-out/${BENCHMARK}_highs}"
 HIGHS_BIN="${HIGHS_BIN:-$HOME/opt/highs/bin/highs}"
 PYTHON="${PYTHON:-python3}"
+SA_EXTRA_ARGS=""
+if [ "${AUTO_TEMPERATURE}" = "1" ]; then
+    SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --auto-temperature"
+fi
+if [ "${AUTO_EPOCH_LENGTH}" = "1" ]; then
+    SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --auto-epoch-length"
+fi
+if [ "${VERBOSE_SA}" = "1" ]; then
+    SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --verbose-sa"
+fi
 
 if [ ! -x "./build/floorplanner" ]; then
     echo "floorplanner executable not found. Build first:"
@@ -37,6 +50,7 @@ if [ -n "${INPUT}" ]; then
         --solver highs \
         --iterations "${ITERATIONS}" \
         --max-no-improve-epochs "${MAX_NO_IMPROVE_EPOCHS}" \
+        ${SA_EXTRA_ARGS} \
         --output "${OUTPUT}" \
         --export-mps "${OUTPUT}/model.mps" \
         --export-lp "${OUTPUT}/model.lp"
@@ -48,6 +62,7 @@ else
         --solver highs \
         --iterations "${ITERATIONS}" \
         --max-no-improve-epochs "${MAX_NO_IMPROVE_EPOCHS}" \
+        ${SA_EXTRA_ARGS} \
         --output "${OUTPUT}" \
         --export-mps "${OUTPUT}/model.mps" \
         --export-lp "${OUTPUT}/model.lp"

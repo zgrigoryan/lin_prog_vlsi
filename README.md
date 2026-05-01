@@ -14,6 +14,13 @@ cmake --build build
 ctest --test-dir build
 ```
 
+Create experiment output directories, or clean solver run directories, with:
+
+```bash
+cmake --build build --target output-dirs
+cmake --build build --target clean-outputs
+```
+
 If HiGHS is installed with a CMake package, the LP backend is enabled automatically. Without HiGHS, construction mode and tests still build, while LP runs report that the solver is unavailable.
 
 ### Installing HiGHS
@@ -150,6 +157,16 @@ BENCHMARK=ami33 ITERATIONS=2000 sh run-highs.sh
 BENCHMARK=ami33 ITERATIONS=2000 sh run-mosek.sh
 INPUT=custom.json MODE=LP OUTPUT=out/custom_highs sh run-highs.sh
 ```
+
+Annealing workflow options adapted from the companion 3D floorplanner are available when you want more robust experimental runs:
+
+```bash
+AUTO_TEMPERATURE=1 VERBOSE_SA=1 BENCHMARK=ami33 ITERATIONS=5000 sh run-highs.sh
+AUTO_EPOCH_LENGTH=1 BENCHMARK=ami49 ITERATIONS=10000 sh run-highs.sh
+```
+
+`AUTO_TEMPERATURE=1` samples random sequence-pair moves and calibrates the starting temperature for an approximate 80% initial acceptance rate. `AUTO_EPOCH_LENGTH=1` uses `max(200, num_blocks^2)` moves per cooling step. `VERBOSE_SA=1` prints temperature, acceptance rate, and feasible-best progress.
+The summary JSON records both requested and effective annealing settings, including `initialTemperatureUsed`, `epochLengthUsed`, `totalMoves`, and `acceptedMoves`.
 
 To run the bundled MCNC set with both external solver checks:
 

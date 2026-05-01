@@ -41,6 +41,15 @@ def read_summary(path):
         "totalWirelength": data.get("totalWirelength"),
         "runtimeSeconds": data.get("runtimeSeconds"),
         "iterations": data.get("iterations"),
+        "seed": data.get("seed"),
+        "epochLength": data.get("epochLength"),
+        "initialTemperature": data.get("initialTemperature"),
+        "initialTemperatureUsed": data.get("initialTemperatureUsed"),
+        "epochLengthUsed": data.get("epochLengthUsed"),
+        "autoTemperature": data.get("autoTemperature"),
+        "totalMoves": data.get("totalMoves"),
+        "acceptedMoves": data.get("acceptedMoves"),
+        "coolingRatio": data.get("coolingRatio"),
         "numBlocks": data.get("numBlocks"),
         "numNets": data.get("numNets"),
         "hasFixedOutline": data.get("hasFixedOutline"),
@@ -79,12 +88,21 @@ def write_csv(rows, path):
         "totalWirelength",
         "runtimeSeconds",
         "iterations",
+        "seed",
+        "epochLength",
+        "initialTemperature",
+        "initialTemperatureUsed",
+        "epochLengthUsed",
+        "autoTemperature",
+        "totalMoves",
+        "acceptedMoves",
+        "coolingRatio",
         "numBlocks",
         "numNets",
         "hasFixedOutline",
     ]
     with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({field: row.get(field) for field in fields})

@@ -374,6 +374,13 @@ void writeSummaryJson(const std::string& path, const FloorplanSolution& s, const
     out << "  \"iterations\": " << metadata.iterations << ",\n";
     out << "  \"seed\": " << metadata.seed << ",\n";
     out << "  \"epochLength\": " << metadata.epochLength << ",\n";
+    out << "  \"initialTemperature\": "; writeJsonNumber(out, metadata.initialTemperature); out << ",\n";
+    out << "  \"initialTemperatureUsed\": "; writeJsonNumber(out, metadata.initialTemperatureUsed); out << ",\n";
+    out << "  \"epochLengthUsed\": " << metadata.epochLengthUsed << ",\n";
+    out << "  \"autoTemperature\": " << (metadata.autoTemperature ? "true" : "false") << ",\n";
+    out << "  \"verboseAnnealing\": " << (metadata.verboseAnnealing ? "true" : "false") << ",\n";
+    out << "  \"totalMoves\": " << metadata.totalMoves << ",\n";
+    out << "  \"acceptedMoves\": " << metadata.acceptedMoves << ",\n";
     out << "  \"coolingRatio\": "; writeJsonNumber(out, metadata.coolingRatio); out << ",\n";
     out << "  \"numBlocks\": " << metadata.numBlocks << ",\n";
     out << "  \"numNets\": " << metadata.numNets << ",\n";

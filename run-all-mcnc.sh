@@ -7,6 +7,9 @@ MODE="${MODE:-SA-CT-LP}"
 ROOT="${ROOT:-out/mcnc_${MODE}}"
 RUN_HIGHS="${RUN_HIGHS:-1}"
 RUN_MOSEK="${RUN_MOSEK:-1}"
+AUTO_TEMPERATURE="${AUTO_TEMPERATURE:-0}"
+AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH:-0}"
+VERBOSE_SA="${VERBOSE_SA:-0}"
 
 for benchmark in ${BENCHMARKS}; do
     if [ "${RUN_HIGHS}" = "1" ]; then
@@ -15,6 +18,9 @@ for benchmark in ${BENCHMARKS}; do
         BENCHMARK="${benchmark}" \
         MODE="${MODE}" \
         ITERATIONS="${ITERATIONS}" \
+        AUTO_TEMPERATURE="${AUTO_TEMPERATURE}" \
+        AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH}" \
+        VERBOSE_SA="${VERBOSE_SA}" \
         OUTPUT="${ROOT}/${benchmark}_highs" \
         sh run-highs.sh || true
     fi
@@ -25,6 +31,9 @@ for benchmark in ${BENCHMARKS}; do
         BENCHMARK="${benchmark}" \
         MODE="${MODE}" \
         ITERATIONS="${ITERATIONS}" \
+        AUTO_TEMPERATURE="${AUTO_TEMPERATURE}" \
+        AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH}" \
+        VERBOSE_SA="${VERBOSE_SA}" \
         OUTPUT="${ROOT}/${benchmark}_mosek" \
         sh run-mosek.sh || true
     fi

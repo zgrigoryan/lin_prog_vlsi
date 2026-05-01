@@ -14,6 +14,13 @@ struct RunMetadata {
     int iterations = 0;
     unsigned seed = 0;
     int epochLength = 0;
+    double initialTemperature = 0.0;
+    double initialTemperatureUsed = 0.0;
+    int epochLengthUsed = 0;
+    bool autoTemperature = false;
+    bool verboseAnnealing = false;
+    long long totalMoves = 0;
+    long long acceptedMoves = 0;
     double coolingRatio = 0.0;
     int numBlocks = 0;
     int numNets = 0;
