@@ -13,6 +13,7 @@ VERBOSE_SA="${VERBOSE_SA:-0}"
 OUTPUT="${OUTPUT:-out/${BENCHMARK}_highs}"
 HIGHS_BIN="${HIGHS_BIN:-$HOME/opt/highs/bin/highs}"
 PYTHON="${PYTHON:-python3}"
+BUILD_DIR="${BUILD_DIR:-build}"
 SA_EXTRA_ARGS=""
 if [ "${AUTO_TEMPERATURE}" = "1" ]; then
     SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --auto-temperature"
@@ -24,10 +25,11 @@ if [ "${VERBOSE_SA}" = "1" ]; then
     SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --verbose-sa"
 fi
 
-if [ ! -x "./build/floorplanner" ]; then
+if [ ! -x "${BUILD_DIR}/floorplanner" ]; then
     echo "floorplanner executable not found. Build first:"
     echo "  cmake -S . -B build -DFP_WITH_HIGHS=ON -DCMAKE_PREFIX_PATH=\$HOME/opt/highs"
     echo "  cmake --build build"
+    echo "Or set BUILD_DIR=/path/to/build."
     exit 1
 fi
 
@@ -44,7 +46,7 @@ mkdir -p "${OUTPUT}"
 echo "Running floorplanner with integrated HiGHS backend"
 set +e
 if [ -n "${INPUT}" ]; then
-    ./build/floorplanner \
+    "${BUILD_DIR}/floorplanner" \
         --input "${INPUT}" \
         --mode "${MODE}" \
         --solver highs \
@@ -55,7 +57,7 @@ if [ -n "${INPUT}" ]; then
         --export-mps "${OUTPUT}/model.mps" \
         --export-lp "${OUTPUT}/model.lp"
 else
-    ./build/floorplanner \
+    "${BUILD_DIR}/floorplanner" \
         --mcnc "${BENCHMARK}" \
         --mcnc-dir "${MCNC_DIR}" \
         --mode "${MODE}" \

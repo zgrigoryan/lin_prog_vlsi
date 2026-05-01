@@ -10,6 +10,9 @@ RUN_MOSEK="${RUN_MOSEK:-1}"
 AUTO_TEMPERATURE="${AUTO_TEMPERATURE:-0}"
 AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH:-0}"
 VERBOSE_SA="${VERBOSE_SA:-0}"
+BUILD_DIR="${BUILD_DIR:-build}"
+HIGHS_BUILD_DIR="${HIGHS_BUILD_DIR:-${BUILD_DIR}}"
+MOSEK_BUILD_DIR="${MOSEK_BUILD_DIR:-${BUILD_DIR}}"
 
 for benchmark in ${BENCHMARKS}; do
     if [ "${RUN_HIGHS}" = "1" ]; then
@@ -21,6 +24,7 @@ for benchmark in ${BENCHMARKS}; do
         AUTO_TEMPERATURE="${AUTO_TEMPERATURE}" \
         AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH}" \
         VERBOSE_SA="${VERBOSE_SA}" \
+        BUILD_DIR="${HIGHS_BUILD_DIR}" \
         OUTPUT="${ROOT}/${benchmark}_highs" \
         sh run-highs.sh || true
     fi
@@ -34,6 +38,7 @@ for benchmark in ${BENCHMARKS}; do
         AUTO_TEMPERATURE="${AUTO_TEMPERATURE}" \
         AUTO_EPOCH_LENGTH="${AUTO_EPOCH_LENGTH}" \
         VERBOSE_SA="${VERBOSE_SA}" \
+        BUILD_DIR="${MOSEK_BUILD_DIR}" \
         OUTPUT="${ROOT}/${benchmark}_mosek" \
         sh run-mosek.sh || true
     fi

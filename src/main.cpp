@@ -36,6 +36,7 @@ struct Args {
 void usage() {
     std::cerr << "Usage:\n";
     std::cerr << "  floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver highs --iterations 10000 --output out/apte\n";
+    std::cerr << "  floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver mosek --iterations 10000 --output out/apte_mosek\n";
     std::cerr << "  floorplanner --blocks mcnc_hard/apte.block --nets mcnc_hard/apte.nets --mode SA-CT-LP --solver highs --output out/apte\n";
     std::cerr << "  floorplanner --input custom.json --mode LP --solver highs --output out/custom\n";
     std::cerr << "Options:\n";

@@ -14,6 +14,7 @@ OUTPUT="${OUTPUT:-out/${BENCHMARK}_mosek_check}"
 MOSEK_HOME="${MOSEK_HOME:-/Users/zara/Downloads/mosek}"
 MOSEK_VERSION="${MOSEK_VERSION:-11.1}"
 PYTHON="${PYTHON:-python3}"
+BUILD_DIR="${BUILD_DIR:-build}"
 SA_EXTRA_ARGS=""
 if [ "${AUTO_TEMPERATURE}" = "1" ]; then
     SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --auto-temperature"
@@ -25,10 +26,11 @@ if [ "${VERBOSE_SA}" = "1" ]; then
     SA_EXTRA_ARGS="${SA_EXTRA_ARGS} --verbose-sa"
 fi
 
-if [ ! -x "./build/floorplanner" ]; then
+if [ ! -x "${BUILD_DIR}/floorplanner" ]; then
     echo "floorplanner executable not found. Build first:"
-    echo "  cmake -S . -B build -DFP_WITH_HIGHS=ON -DCMAKE_PREFIX_PATH=\$HOME/opt/highs"
+    echo "  cmake -S . -B build -DFP_WITH_MOSEK=ON -DMOSEK_HOME=/Users/zara/Downloads/mosek -DMOSEK_VERSION=11.1"
     echo "  cmake --build build"
+    echo "Or set BUILD_DIR=/path/to/build."
     exit 1
 fi
 
@@ -39,25 +41,15 @@ MOSEK_EXE=$(find "${MOSEK_HOME}/${MOSEK_VERSION}/tools/platform" \
     -print 2>/dev/null \
     | head -n 1 || true)
 
-if [ -z "${MOSEK_EXE}" ] || [ ! -x "${MOSEK_EXE}" ]; then
-    echo "MOSEK command-line executable not found."
-    echo "Looked under:"
-    echo "  ${MOSEK_HOME}/${MOSEK_VERSION}/tools/platform"
-    echo
-    echo "Override with:"
-    echo "  MOSEK_HOME=/path/to/mosek MOSEK_VERSION=11.1 sh run-mosek.sh"
-    exit 1
-fi
-
 mkdir -p "${OUTPUT}"
 
-echo "Running floorplanner to export corrected LP/MPS model"
+echo "Running floorplanner with native MOSEK backend"
 set +e
 if [ -n "${INPUT}" ]; then
-    ./build/floorplanner \
+    "${BUILD_DIR}/floorplanner" \
         --input "${INPUT}" \
         --mode "${MODE}" \
-        --solver highs \
+        --solver mosek \
         --iterations "${ITERATIONS}" \
         --max-no-improve-epochs "${MAX_NO_IMPROVE_EPOCHS}" \
         ${SA_EXTRA_ARGS} \
@@ -65,11 +57,11 @@ if [ -n "${INPUT}" ]; then
         --export-mps "${OUTPUT}/model.mps" \
         --export-lp "${OUTPUT}/model.lp"
 else
-    ./build/floorplanner \
+    "${BUILD_DIR}/floorplanner" \
         --mcnc "${BENCHMARK}" \
         --mcnc-dir "${MCNC_DIR}" \
         --mode "${MODE}" \
-        --solver highs \
+        --solver mosek \
         --iterations "${ITERATIONS}" \
         --max-no-improve-epochs "${MAX_NO_IMPROVE_EPOCHS}" \
         ${SA_EXTRA_ARGS} \
@@ -92,7 +84,9 @@ fi
 
 echo
 echo "Verifying exported MPS with MOSEK CLI"
-if [ -f "${OUTPUT}/model.mps" ]; then
+if [ -z "${MOSEK_EXE}" ] || [ ! -x "${MOSEK_EXE}" ]; then
+    echo "Skipping MOSEK CLI verification: executable not found under ${MOSEK_HOME}/${MOSEK_VERSION}/tools/platform"
+elif [ -f "${OUTPUT}/model.mps" ]; then
     "${MOSEK_EXE}" "${OUTPUT}/model.mps"
 else
     echo "No exported MPS found at ${OUTPUT}/model.mps"

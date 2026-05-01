@@ -4,7 +4,7 @@ Educational C++17 implementation of the main algorithmic structure from:
 
 Jae-Gon Kim and Yeong-Dae Kim, "A Linear Programming-Based Algorithm for Floorplanning in VLSI Design," IEEE TCAD, 2003.
 
-The code implements sequence-pair topology search, hard and soft rectangular blocks, compact longest-path placement, and a fixed-sequence-pair LP model with an isolated solver backend. HiGHS is the default intended LP backend; MOSEK and CPLEX can be added by implementing `LPSolver`.
+The code implements sequence-pair topology search, hard and soft rectangular blocks, compact longest-path placement, and a fixed-sequence-pair LP model with an isolated solver backend. HiGHS is the default LP backend, MOSEK is supported through the C++ Fusion API when enabled at build time, and CPLEX can be added later by implementing `LPSolver`.
 
 ## Build
 
@@ -51,6 +51,41 @@ To build explicitly without HiGHS:
 ```bash
 cmake -S . -B build -DFP_WITH_HIGHS=OFF
 cmake --build build
+```
+
+### Building With MOSEK
+
+MOSEK can be built as a native backend through the C++ Fusion API. This is different from merely exporting an MPS file: `--solver mosek` will solve inside the floorplanner and write MOSEK-produced placements.
+
+```bash
+cmake -S . -B build \
+  -DFP_WITH_HIGHS=ON \
+  -DFP_WITH_MOSEK=ON \
+  -DCMAKE_PREFIX_PATH=$HOME/opt/highs \
+  -DMOSEK_HOME=/Users/zara/Downloads/mosek \
+  -DMOSEK_VERSION=11.1
+
+cmake --build build -j
+```
+
+With that single build, both solver choices are available:
+
+```bash
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver highs --iterations 1000 --output out/apte_highs
+./build/floorplanner --mcnc apte --mcnc-dir mcnc_hard --mode SA-CT-LP --solver mosek --iterations 1000 --output out/apte_mosek
+```
+
+Separate build directories also work:
+
+```bash
+cmake -S . -B build-highs -DFP_WITH_HIGHS=ON -DFP_WITH_MOSEK=OFF -DCMAKE_PREFIX_PATH=$HOME/opt/highs
+cmake --build build-highs -j
+
+cmake -S . -B build-mosek -DFP_WITH_HIGHS=OFF -DFP_WITH_MOSEK=ON -DMOSEK_HOME=/Users/zara/Downloads/mosek -DMOSEK_VERSION=11.1
+cmake --build build-mosek -j
+
+BUILD_DIR=build-highs BENCHMARK=apte sh run-highs.sh
+BUILD_DIR=build-mosek BENCHMARK=apte sh run-mosek.sh
 ```
 
 ## CLI
@@ -121,8 +156,8 @@ Modes:
 Solvers:
 
 - `highs`: implemented when compiled with `FP_WITH_HIGHS=ON` and HiGHS is found.
+- `mosek`: implemented when compiled with `FP_WITH_MOSEK=ON` and the MOSEK Fusion SDK is found.
 - `none`: allowed for `CT` and `SA-CT`; LP-backed modes fail with a clear error.
-- `mosek`: planned backend, not implemented yet.
 - `cplex`: planned backend, not implemented yet.
 
 LP-backed modes require an available solver. `CT` and `SA-CT` do not.
@@ -150,7 +185,7 @@ sh run-highs.sh
 sh run-mosek.sh
 ```
 
-By default these run the `apte` MCNC benchmark with `SA-CT-LP`, export `model.mps`/`model.lp`, generate `floorplan.png`, and verify the exported MPS with the external solver. Override defaults with environment variables:
+By default these run the `apte` MCNC benchmark with `SA-CT-LP`, export `model.mps`/`model.lp`, generate `floorplan.png`, and verify the exported MPS with the external solver. `run-highs.sh` uses `--solver highs`; `run-mosek.sh` uses the native `--solver mosek` backend and no longer calls HiGHS. Override defaults with environment variables:
 
 ```bash
 BENCHMARK=ami33 ITERATIONS=2000 sh run-highs.sh
@@ -172,6 +207,12 @@ To run the bundled MCNC set with both external solver checks:
 
 ```bash
 ITERATIONS=1000 sh run-all-mcnc.sh
+```
+
+If you keep separate solver builds:
+
+```bash
+HIGHS_BUILD_DIR=build-highs MOSEK_BUILD_DIR=build-mosek ITERATIONS=1000 sh run-all-mcnc.sh
 ```
 
 This runs `apte`, `xerox`, `hp`, `ami33`, and `ami49` with both HiGHS and MOSEK checks. Outputs are written under:
@@ -222,4 +263,4 @@ Intentional simplifications and engineering choices:
 - Soft-block area is handled by iterative linear cuts instead of an exact nonlinear model.
 - Soft construction candidates are log-spaced aspect ratios.
 - `SA-LP` uses a construction penalty only when an LP candidate is infeasible, so fixed-outline MCNC searches can keep moving.
-- MOSEK is used through exported MPS/LP files, not a native C++ backend yet.
+- MOSEK has a native Fusion backend when compiled with `FP_WITH_MOSEK=ON`; exported MPS/LP files remain useful for cross-solver checks.
