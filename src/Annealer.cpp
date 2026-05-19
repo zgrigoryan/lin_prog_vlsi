@@ -38,7 +38,6 @@ FloorplanSolution evaluateSequencePair(const FloorplanProblem& problem, const Se
         FloorplanSolution lp = optimizeByLP(problem, sp, *solver);
         if (lp.feasible || mode == EvaluationMode::LP) return lp;
 
-        // Paper deviation / engineering fallback:
         // In the paper, SA-LP evaluates topologies by LP. In fixed-outline
         // MCNC runs, many early topologies are LP-infeasible; treating every
         // failure as the same infinite objective prevents search progress.
